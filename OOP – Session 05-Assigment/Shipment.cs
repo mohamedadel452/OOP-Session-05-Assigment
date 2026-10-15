@@ -14,6 +14,7 @@ namespace OOP05_SmartDelivery
         // Static Field: Shared across all instances in the AppDomain / Type Object in Heap
         public static int TotalShipmentsCreated = 0;
 
+       
         // Static Constructor: Executed exactly once by CLR before first instance or static access
         static Shipment()
         {
