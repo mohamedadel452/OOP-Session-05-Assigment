@@ -107,7 +107,31 @@ namespace OOP05_SmartDelivery
 
     ========================================================================================================================
 
-   
+        Q5: Partial Classes and Partial Methods
+    ------------------------------------------------------------------------------------------------------------------------
+    a) What is a Partial Class?
+       - Answer:
+         A class whose definition can be split across multiple `.cs` source files using the `partial` keyword. 
+         The C# compiler merges all parts into a single unified class in the final metadata/CIL assembly.
+
+    b) Why would a developer split one class into multiple files?
+       - Answer:
+         1. Separation of Concerns: Dividing large classes into functional areas (e.g., `Shipment.cs` for data and `Shipment.Tracking.cs` for tracking).
+         2. Source Code Generators / Tools: Code-generation tools (like EF Core, WPF, or WinForms) can generate one part while developers edit another without conflicts.
+         3. Team Collaboration: Allowing multiple developers to work on different aspects of a class without merge conflicts.
+
+    c) What is a Partial Method?
+       - Answer:
+         A method declared in one part of a partial class and optionally implemented in another part. It must return `void`, 
+         cannot be `virtual`, `abstract`, or `sealed`, and cannot have `out` parameters.
+
+    d) What happens if a declared partial method has no implementation?
+       - Answer:
+         The C# compiler completely strips out the method declaration and all calls to it from the compiled assembly. 
+         It leaves ZERO runtime overhead and zero IL instructions.
+    ========================================================================================================================
+
+  
     */
     #endregion
 
