@@ -59,7 +59,33 @@ namespace OOP05_SmartDelivery
           must NEVER mutate the historical delivery address of the original shipment.
 
      ========================================================================================================================
- 
+     Q3: Static Members
+    ------------------------------------------------------------------------------------------------------------------------
+    a) What is a static field, and how is it different from an instance field?
+       - Answer:
+         - Instance Field: Allocated inside every object instance on the Heap. Each object has its own separate copy.
+         - Static Field: Belongs to the Type (Class) itself and is allocated once inside the High-Frequency Heap / Type Object. 
+           It is shared across all instances in the AppDomain.
+
+    b) What is a static method? Can a static method directly access instance members?
+       - Answer:
+         A static method is invoked on the class level without requiring an object instance (`ClassName.Method()`). 
+         It CANNOT directly access instance fields or instance methods because it has no implicit `this` pointer pointing 
+         to a specific object in memory.
+
+    c) What is a static constructor, and when is it executed?
+       - Answer:
+         A parameterless constructor marked with `static`. It is executed automatically by the CLR exactly once: 
+         before the first instance of the class is created or any static member is referenced. It cannot be called 
+         manually, cannot take parameters, and cannot have access modifiers (`public`/`private`).
+
+    d) What is a static class? Can you create an object from a static class?
+       - Answer:
+         A class declared with the `static` keyword. The compiler makes it `abstract` and `sealed` under the hood. 
+         It can contain ONLY static members and static constructors. You CANNOT instantiate it (`new ClassName()` is a compile error).
+
+    ========================================================================================================================
+
    
     */
     #endregion
