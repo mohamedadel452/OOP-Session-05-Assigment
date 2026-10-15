@@ -9,6 +9,7 @@ namespace OOP05_SmartDelivery
     /// </summary>
     public abstract partial class Shipment 
     {
+        
         #region Static Members
         // Static Field: Shared across all instances in the AppDomain / Type Object in Heap
         public static int TotalShipmentsCreated = 0;
