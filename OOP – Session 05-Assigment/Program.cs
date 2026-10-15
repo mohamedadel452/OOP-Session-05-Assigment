@@ -85,6 +85,27 @@ namespace OOP05_SmartDelivery
          It can contain ONLY static members and static constructors. You CANNOT instantiate it (`new ClassName()` is a compile error).
 
     ========================================================================================================================
+        Q4: Extension Methods
+    ------------------------------------------------------------------------------------------------------------------------
+    a) What is an Extension Method?
+       - Answer:
+         A static method that allows developers to "add" new methods to existing types without modifying the original source code, 
+         recompiling, or creating a derived type. It is invoked syntactically as if it were an instance method on the target object.
+
+    b) What keyword must be used in the first parameter of an extension method?
+       - Answer:
+         The `this` keyword (e.g., `public static string GetSummary(this Shipment shipment)`).
+
+    c) Where must an extension method be declared?
+       - Answer:
+         Inside a top-level, non-nested, non-generic `static class`.
+
+    d) Can an extension method access private members of the class it extends?
+       - Answer:
+         No. An extension method is syntactic sugar for a static method call. It obeys standard encapsulation rules and 
+         can only access public and internal members (if in the same assembly) of the extended class.
+
+    ========================================================================================================================
 
    
     */
