@@ -7,14 +7,12 @@ namespace OOP05_SmartDelivery
     /// Abstract partial class representing the base Shipment.
     /// Contains core fields, properties, constructors, static members, and copy mechanisms.
     /// </summary>
-    public abstract partial class Shipment 
+    public abstract partial class Shipment : ITrackable, IInsurable
     {
-        
         #region Static Members
         // Static Field: Shared across all instances in the AppDomain / Type Object in Heap
         public static int TotalShipmentsCreated = 0;
 
-       
         // Static Constructor: Executed exactly once by CLR before first instance or static access
         static Shipment()
         {
@@ -32,7 +30,7 @@ namespace OOP05_SmartDelivery
         #region Fields & Properties
         private string trackingCode;
         private string description;
-        private decimal weight; 
+        private decimal weight;
         private decimal deliveryFee;
 
         // Destination is a reference type (DeliveryAddress class)
@@ -157,7 +155,16 @@ namespace OOP05_SmartDelivery
         public abstract decimal CalculateInsurance();
         #endregion
 
-        
+        #region Partial Method Implementation
+        /// <summary>
+        /// Implementation of the partial method declared in Shipment.Tracking.cs.
+        /// Called automatically whenever the tracking status is updated.
+        /// </summary>
+        partial void OnTrackingStatusChanged(string newStatus)
+        {
+            Console.WriteLine($"Tracking status changed to: {newStatus}");
+        }
+        #endregion
     }
     #endregion
 }
