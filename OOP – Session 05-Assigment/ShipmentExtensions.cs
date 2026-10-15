@@ -29,6 +29,7 @@ namespace OOP05_SmartDelivery
         /// Checks if the shipment is delivered.
         /// Returns true only when the tracking status equals "Delivered" (case-insensitive).
         /// </summary>
+      
         public static bool IsDelivered(this Shipment shipment)
         {
             if (shipment == null) return false;
