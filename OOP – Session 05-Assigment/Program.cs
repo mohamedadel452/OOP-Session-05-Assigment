@@ -141,7 +141,132 @@ namespace OOP05_SmartDelivery
     {
         static void Main(string[] args)
         {
-       
+
+            #region Title & Static Initialization
+            // 7. Static Utilities: Print system title
+            DeliveryUtilities.PrintSystemTitle("Smart Delivery Management System");
+
+            // 5. Static Constructor Trigger:
+            // Accessing any static member of Shipment ensures the CLR runs the static constructor
+            // which prints "Shipment System Initialized" exactly once.
+            _ = Shipment.TotalShipmentsCreated;
+            #endregion
+
+            #region Creating Shipments & Static Counter
+            DeliveryUtilities.PrintSeparator();
+            Console.WriteLine("Creating Shipments...");
+            DeliveryUtilities.PrintSeparator();
+
+            // a. Create one StandardShipment
+            DeliveryAddress addr1 = new DeliveryAddress("Cairo", "Tahrir", 1);
+            StandardShipment std = new StandardShipment("SH001", "Laptop", 3m, 80m, addr1);
+            Console.WriteLine("Standard Shipment Created");
+
+            // b. Create one ExpressShipment
+            DeliveryAddress addr2 = new DeliveryAddress("Giza", "Dokki", 10);
+            ExpressShipment exp = new ExpressShipment("SH002", "Mobile Phone", 2m, 60m, addr2, 30m);
+            Console.WriteLine("Express Shipment Created");
+
+            // c. Create one InternationalShipment
+            DeliveryAddress addr3 = new DeliveryAddress("Alex", "Corniche", 50);
+            InternationalShipment intl = new InternationalShipment("SH003", "Television", 8m, 120m, addr3, "Germany", 100m);
+            Console.WriteLine("International Shipment Created");
+
+            // 6. Static Method: GetTotalShipmentsCreated
+            Console.WriteLine($"Total Shipments Created : {Shipment.GetTotalShipmentsCreated()}");
+            #endregion
+
+            #region Object Copying: Reference Assignment vs Clones
+            DeliveryUtilities.PrintSeparator();
+            Console.WriteLine("Object Copying");
+            DeliveryUtilities.PrintSeparator();
+
+            // 1. Reference Assignment: Aliasing the pointer
+            Shipment assignedShipment = std;
+            Console.WriteLine($"Original Shipment  : {std.TrackingCode}");
+            Console.WriteLine($"Assigned Shipment  : {assignedShipment.TrackingCode}");
+            Console.WriteLine($"Same Object : {object.ReferenceEquals(std, assignedShipment)}");
+
+            // 2. Shallow Copy Demonstration
+            DeliveryUtilities.PrintSubSeparator();
+            Console.WriteLine("Shallow Copy");
+            DeliveryUtilities.PrintSubSeparator();
+
+            Shipment shallowCopied = std.ShallowCopy();
+            Console.WriteLine($"Original Shipment Address : {std.Destination.City}");
+            Console.WriteLine($"Copied Shipment Address   : {shallowCopied.Destination.City}");
+
+            Console.WriteLine("Changing copied shipment address...");
+            shallowCopied.Destination.City = "Giza";
+
+            Console.WriteLine($"Original Shipment Address : {std.Destination.City}");
+            Console.WriteLine($"Copied Shipment Address   : {shallowCopied.Destination.City}");
+            Console.WriteLine($"Same DeliveryAddress Object : {object.ReferenceEquals(std.Destination, shallowCopied.Destination)}");
+
+            // 3. Deep Copy Demonstration
+            DeliveryUtilities.PrintSubSeparator();
+            Console.WriteLine("Deep Copy");
+            DeliveryUtilities.PrintSubSeparator();
+
+            // Reset address back to Cairo
+            std.Destination.City = "Cairo";
+            Shipment deepCopied = std.DeepCopy();
+            Console.WriteLine($"Original Shipment Address : {std.Destination.City}");
+            Console.WriteLine($"Copied Shipment Address   : {deepCopied.Destination.City}");
+
+            Console.WriteLine("Changing copied shipment address...");
+            deepCopied.Destination.City = "Giza";
+
+            Console.WriteLine($"Original Shipment Address : {std.Destination.City}");
+            Console.WriteLine($"Copied Shipment Address   : {deepCopied.Destination.City}");
+            Console.WriteLine($"Same DeliveryAddress Object : {object.ReferenceEquals(std.Destination, deepCopied.Destination)}");
+            #endregion
+
+            #region Extension Methods Demonstration
+            DeliveryUtilities.PrintSeparator();
+            Console.WriteLine("Extension Methods");
+            DeliveryUtilities.PrintSeparator();
+
+            // 8. Extension Methods: GetSummary() and IsDelivered()
+            Console.WriteLine(std.GetSummary());
+            Console.WriteLine(exp.GetSummary());
+            Console.WriteLine(intl.GetSummary());
+
+            Console.WriteLine($"SH001 Is Delivered : {std.IsDelivered()}");
+            Console.WriteLine($"SH003 Is Delivered : {intl.IsDelivered()}");
+            #endregion
+
+            #region Tracking Status & Partial Method Demonstration
+            DeliveryUtilities.PrintSeparator();
+            Console.WriteLine("Tracking Status");
+            DeliveryUtilities.PrintSeparator();
+
+            // 9 & 10. Partial Method Triggered via UpdateTrackingStatus
+            std.UpdateTrackingStatus("Out For Delivery");
+            #endregion
+
+            #region Static Utilities Demonstration
+            DeliveryUtilities.PrintSeparator();
+            Console.WriteLine("Static Utilities");
+            DeliveryUtilities.PrintSeparator();
+            DeliveryUtilities.PrintSubSeparator();
+            Console.WriteLine("Delivery Center");
+            DeliveryUtilities.PrintSubSeparator();
+            Console.WriteLine($"Total Shipments Created : {Shipment.GetTotalShipmentsCreated()}");
+            #endregion
+
+            #region Partial Method Further Demonstration
+            DeliveryUtilities.PrintSeparator();
+            Console.WriteLine("Partial Method");
+            DeliveryUtilities.PrintSeparator();
+            intl.UpdateTrackingStatus("Delivered");
+            #endregion
+
+            #region Assignment Completion
+            DeliveryUtilities.PrintSeparator();
+            Console.WriteLine("Assignment Completed");
+            DeliveryUtilities.PrintSeparator();
+            #endregion
 
         }
     }
