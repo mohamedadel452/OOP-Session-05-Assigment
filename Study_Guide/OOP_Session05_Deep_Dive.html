@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OOP Session 05: Object Copying و Static و Extension Methods و Partial</title>
+<style>
+:root{--bg:#f6f7f4;--fg:#1d2327;--mut:#5b6670;--card:#fff;--line:#d9ded8;--acc:#0b6b5c;--warn:#a4440f;--warnbg:#fdf0e6;--code:#10201c;--codefg:#d7efe6;--okbg:#e6f4ef}
+@media(prefers-color-scheme:dark){:root{--bg:#121816;--fg:#e4ebe8;--mut:#9aa8a3;--card:#1a2320;--line:#2c3834;--acc:#4fc2a8;--warn:#f0a066;--warnbg:#2b2118;--code:#0b1210;--okbg:#17302a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.85 "Segoe UI",Tahoma,"Noto Naskh Arabic",system-ui,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+main{max-width:860px;margin:0 auto;padding:28px 18px 80px}
+h1{font-size:1.9rem;line-height:1.4;margin:.2em 0}
+h2{font-size:1.45rem;margin:2.3em 0 .5em;padding-inline-start:12px;border-inline-start:5px solid var(--acc)}
+h3{font-size:1.08rem;margin:1.5em 0 .3em;color:var(--acc)}
+p{margin:.6em 0}.lead{color:var(--mut)}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+nav a{color:var(--fg);text-decoration:none;border:1px solid var(--line);background:var(--card);padding:4px 12px;border-radius:6px;font-size:.9rem}
+nav a:hover,nav a:focus-visible{border-color:var(--acc);color:var(--acc)}
+pre{direction:ltr;text-align:left;background:var(--code);color:var(--codefg);padding:14px 16px;border-radius:8px;overflow-x:auto;font:14px/1.6 Consolas,Menlo,monospace;margin:.8em 0}
+code{direction:ltr;unicode-bidi:embed;font-family:Consolas,Menlo,monospace;font-size:.9em;background:var(--okbg);padding:1px 6px;border-radius:4px}
+pre code{background:none;padding:0;font-size:inherit}
+.box{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 16px;margin:1em 0}
+.warn{background:var(--warnbg);border-color:var(--warn)}.warn .t{color:var(--warn)}
+.ok{background:var(--okbg);border-color:var(--acc)}
+.tw{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;width:100%;min-width:540px;background:var(--card)}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:start;vertical-align:top;font-size:.95rem}
+th{background:var(--okbg)}
+li{margin:.3em 0}
+footer{margin-top:3em;color:var(--mut);font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+<h1>OOP Session 05: Object Copying و Static و Extension Methods و Partial</h1>
+<p class="lead">كل موضوع مرتب من الصفر: الفكرة بكلام بسيط، وبعدها الميكانيزم، وبعدها الكود، وبعدها الأخطاء والحالات المتقدمة.</p>
+<nav><a href="#c">1. نسخ الـ Objects</a><a href="#s">2. Static</a><a href="#e">3. Extension Methods</a><a href="#p">4. Partial</a><a href="#f">5. أخطاء السلايدات</a><a href="#r">6. مراجعة</a></nav>
+
+<h2 id="c">1) Object Copying</h2>
+<h3>أولاً: من الصفر</h3>
+<p>لما تكتب <code>b = a</code> الـ C# بتنسخ <b>اللي جوه المتغير</b>. لو المتغير value type (int, struct) اللي جواه هو القيمة نفسها، فبتتعمل نسخة مستقلة. لو reference type (class) اللي جواه هو <b>عنوان</b> الـ object على الـ Heap، فبيتنسخ العنوان بس والاتنين يشاوروا على نفس الـ object.</p>
+<pre><code>int a = 10; int b = a; b = 20;          // a = 10 (نسخة مستقلة)
+var p1 = new Person { Name = "Ahmed" };
+var p2 = p1;                            // نفس الـ object
+p2.Name = "Omar";
+Console.WriteLine(p1.Name);             // Omar</code></pre>
+<h3>ثانياً: Shallow Copy</h3>
+<p>بتعمل object جديد وبتنسخ حقوله واحد واحد. الحقول من نوع value بتتنسخ بقيمتها، والحقول من نوع reference بيتنسخ عنوانها، فالنسختين بيشاركوا نفس الـ objects الداخلية.</p>
+<pre><code>public class Address { public string City { get; set; } }
+public class Person
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public Address Address { get; set; }
+
+    public Person ShallowCopy() =&gt; (Person)MemberwiseClone();
+}
+
+var p1 = new Person { Name = "Ahmed", Age = 25, Address = new Address { City = "Cairo" } };
+var p2 = p1.ShallowCopy();
+p2.Age = 30;               // p1.Age يفضل 25
+p2.Address.City = "Giza";  // p1.Address.City بقت Giza !</code></pre>
+<p><b>الميكانيزم:</b> <code>MemberwiseClone</code> دالة protected في <code>System.Object</code>. بتخصص object جديد بنفس النوع وبتنسخ الـ bytes بتاعة الحقول، من غير ما تشغّل أي constructor.</p>
+<h3>ثالثاً: Deep Copy</h3>
+<p>بتعمل نسخة جديدة من الـ object ومن كل الـ objects اللي بيشاور عليها، فالنسخة مستقلة تماماً. فيه ثلاث طرق:</p>
+<div class="tw"><table>
+<tr><th>الطريقة</th><th>الميزة</th><th>العيب</th></tr>
+<tr><td>يدوي (Copy constructor أو DeepCopy)</td><td>تحكم كامل وأسرع</td><td>لازم تحدّثه كل ما تضيف حقل (بيتنسى بسهولة)</td></tr>
+<tr><td>Serialization (JSON)</td><td>سطر واحد</td><td>بطيء، بيفقد private fields والـ polymorphism، وبيتعثر مع الـ cycles</td></tr>
+<tr><td><code>ICloneable</code></td><td>موجود في الـ BCL</td><td>الـ contract غامض (deep ولا shallow؟) ويرجع <code>object</code></td></tr>
+</table></div>
+<pre><code>// يدوي
+public Person DeepCopy() =&gt; new Person
+{
+    Name = Name, Age = Age,
+    Address = new Address { City = Address.City }
+};
+
+// Serialization
+static T DeepClone&lt;T&gt;(T src) =&gt;
+    JsonSerializer.Deserialize&lt;T&gt;(JsonSerializer.Serialize(src))!;</code></pre>
+<h3>رابعاً: متقدم وأخطاء شائعة</h3>
+<div class="box warn"><p><b class="t">1) الـ struct مش دايماً "قيمة بالكامل":</b></p>
+<pre><code>struct S { public int[] Arr; }
+var a = new S { Arr = new[] { 1 } };
+var b = a;           // نسخة من الـ struct
+b.Arr[0] = 99;
+Console.WriteLine(a.Arr[0]);   // 99</code></pre>
+<p>الـ struct بيتنسخ بالقيمة، لكن لو جواه حقل reference فالعنوان هو اللي بيتنسخ. جدول السلايد 10 بيقول "struct → actual values copied" وده ناقص.</p></div>
+<div class="box warn"><p><b class="t">2) الـ <code>with</code> في الـ record هي Shallow Copy:</b></p>
+<pre><code>record Order(string Id, List&lt;string&gt; Items);
+var a = new Order("1", new() { "x" });
+var b = a with { Id = "2" };
+b.Items.Add("y");
+Console.WriteLine(a.Items.Count);   // 2 : نفس الـ List</code></pre></div>
+<div class="box warn"><p><b class="t">3) الـ <code>string</code>:</b> reference type بس immutable، فمشاركته مفيهاش خطر (أي تعديل بيعمل string جديد). عشان كده في الـ deep copy بتنسخه بالـ reference عادي. السلايد 15 بيحطه مع "new objects"، والفرق ده مهم.</p></div>
+<div class="box warn"><p><b class="t">4) الـ Collections:</b> <code>new List&lt;Person&gt;(list)</code> بتعمل list جديدة لكن بنفس الـ Person objects، يعني Shallow. لازم <code>list.Select(p =&gt; p.DeepCopy()).ToList()</code>.</p></div>
+<div class="box warn"><p><b class="t">5) <code>BinaryFormatter</code> (مذكور في السلايد 16):</b> ممنوع تستخدمه. بيسبب ثغرات Remote Code Execution، واتعلّم obsolete وبقى يرمي exception في .NET 9 فما فوق. استخدم <code>System.Text.Json</code> أو كتابة يدوية.</p></div>
+<p><b>الـ Cycles:</b> لو <code>Parent</code> فيه <code>Child</code> والـ <code>Child</code> فيه <code>Parent</code>، الـ deep copy اليدوي البسيط هيدخل في recursion لا نهائي (StackOverflow)، والـ JSON هيرمي exception إلا لو فعّلت <code>ReferenceHandler.Preserve</code>. الحل: dictionary بيتتبع اللي اتنسخ قبل كده.</p>
+<p><b>إمتى أي واحدة؟</b> الـ shallow لو كل الحقول value types أو immutable. الـ deep لو هتعدّل النسخة وعايز الأصل ما يتأثرش. وبديل أفضل في كتير من الحالات: <b>Immutable objects</b> (records و init) فمفيش حاجة تتنسخ أصلاً.</p>
+
+<h2 id="s">2) Static</h2>
+<h3>أولاً: من الصفر</h3>
+<p>العضو العادي (instance) بيتبع <b>object</b> معين، وكل object ليه نسخته. العضو الـ <code>static</code> بيتبع <b>الـ class نفسه</b> وفيه نسخة واحدة بس مشتركة. بتناديه باسم الـ class مش باسم object.</p>
+<pre><code>public class Counter
+{
+    public static int Count = 0;      // مشترك بين كل الـ objects
+    public string Name;               // لكل object نسخته
+
+    public static void ShowCount() =&gt; Console.WriteLine($"Count = {Count}");
+    public void Increment() =&gt; Count++;   // instance يقدر يوصل لـ static
+}
+
+var c1 = new Counter(); var c2 = new Counter();
+c1.Increment(); c2.Increment();
+Counter.ShowCount();     // Count = 2</code></pre>
+<h3>ثانياً: القواعد وليه موجودة</h3>
+<div class="tw"><table>
+<tr><th>Static</th><th>Instance</th></tr>
+<tr><td>يخص الـ class</td><td>يخص الـ object</td></tr>
+<tr><td>نسخة واحدة</td><td>نسخة لكل object</td></tr>
+<tr><td>بتناديه بـ <code>ClassName.Member</code></td><td>بتناديه بـ object</td></tr>
+<tr><td>ما يقدرش يوصل لـ instance مباشرة</td><td>يقدر يوصل للاتنين</td></tr>
+</table></div>
+<p><b>ليه الـ static مش بيقدر يوصل لـ instance member؟</b> لأن مفيش <code>this</code>. الدالة الـ static بتتنادى من غير object، فالـ compiler مش عارف حقل <code>Name</code> بتاع أنهي object. ولنفس السبب مفيش <code>this</code> ولا <code>base</code> جوه static context.</p>
+<h3>ثالثاً: Static Constructor و Static Class</h3>
+<pre><code>public static class AppConfig
+{
+    public static string AppName { get; }
+    static AppConfig() { AppName = "MyApp"; }   // مفيش access modifier ولا parameters
+}</code></pre>
+<ul>
+<li>الـ static constructor بيشتغل <b>مرة واحدة</b> قبل أول استخدام للـ class، والـ runtime بيضمن إنه thread-safe.</li>
+<li>الـ static class: مينفعش instance منه، ومينفعش يورّث، وكل أعضاؤه لازم static. في الـ IL بيتعلّم <code>abstract sealed</code>.</li>
+<li>مناسب لـ: Math، دوال مساعدة من غير state، والـ constants.</li>
+</ul>
+<h3>رابعاً: مشاكل الإنتاج والمتقدم</h3>
+<div class="box warn"><p><b class="t">1) Race condition:</b> في تطبيق ويب الـ static مشترك بين كل الـ requests (threads).</p>
+<pre><code>public static class Stats { public static int Hits; }
+Parallel.For(0, 100_000, _ =&gt; Stats.Hits++);
+Console.WriteLine(Stats.Hits);     // أقل من 100000 غالباً
+// الحل:
+Parallel.For(0, 100_000, _ =&gt; Interlocked.Increment(ref Stats.Hits));</code></pre>
+<p>السبب إن <code>++</code> مش عملية واحدة: قراءة ثم زيادة ثم كتابة، والـ threads بتتداخل.</p></div>
+<div class="box warn"><p><b class="t">2) فشل الـ static constructor دايم:</b></p>
+<pre><code>static class Db {
+    public static readonly string Conn;
+    static Db() { Conn = Environment.GetEnvironmentVariable("CONN")
+                         ?? throw new Exception("missing"); }
+}
+// أول استخدام: TypeInitializationException
+// وكل استخدام بعده بيرمي نفس الخطأ حتى إعادة تشغيل الـ process</code></pre></div>
+<div class="box warn"><p><b class="t">3) لكل نوع generic نسخة static:</b></p>
+<pre><code>class Cache&lt;T&gt; { public static int Hits; }
+Cache&lt;int&gt;.Hits++;
+Console.WriteLine(Cache&lt;string&gt;.Hits);   // 0</code></pre></div>
+<div class="box warn"><p><b class="t">4) تسريب الذاكرة:</b> الحقول الـ static هي GC roots، فأي object محفوظ في <code>static List</code> أو <code>static event</code> عمره عمر الـ process ومش بيتنضف. وكمان الـ static بيصعّب الاختبار (state مشترك بين الـ tests ومفيش mock)، فللـ dependencies استخدم DI بدل static.</p></div>
+<p><b>ملحوظة دقة:</b> السلايد 24 بيقول إن الـ static "يعيش طول عمر التطبيق"، وده صح عملياً، لكن التحديد الأدق: بيعيش طول عمر الـ type المحمّل (وفي الـ plug-ins اللي بتتحمّل في <code>AssemblyLoadContext</code> منفصل ممكن يتفرغ).</p>
+
+<h2 id="e">3) Extension Methods</h2>
+<h3>أولاً: من الصفر</h3>
+<p>عايز تضيف دالة لنوع مش بتاعك (<code>string</code> مثلاً) ومينفعش تعدّل كوده. الـ extension method بتخليك تكتب <code>text.Shout()</code> كأنها جزء من <code>string</code>.</p>
+<pre><code>public static class StringExtensions            // 1) static class
+{
+    public static string Shout(this string s)   // 2) static method + this على أول parameter
+        =&gt; s.ToUpper() + "!";
+}
+"hello".Shout();     // HELLO!</code></pre>
+<h3>ثانياً: الميكانيزم (الأهم)</h3>
+<p>مفيش حاجة اتضافت للنوع. الـ compiler وقت الترجمة بيحوّل <code>name.Shout()</code> إلى <code>StringExtensions.Shout(name)</code>. يعني <b>syntactic sugar</b> لدالة static. وده سبب إن النداء على <code>null</code> بيشتغل:</p>
+<pre><code>string? name = null;
+bool r = name.IsNullOrEmptyEx();   // true ، مفيش NullReferenceException
+public static bool IsNullOrEmptyEx(this string? s) =&gt; string.IsNullOrEmpty(s);</code></pre>
+<p>الـ NRE بتحصل جوه الدالة لو استخدمت <code>s.Length</code> على null، مش في مكان النداء، وده بيربك الـ stack trace.</p>
+<h3>ثالثاً: قواعد الـ Resolution</h3>
+<ul>
+<li>الـ <b>instance method دايماً بتكسب</b> على الـ extension لو الاسم والـ signature متطابقين، والـ extension مش بتعمل override.</li>
+<li>لازم الـ namespace يتعمله <code>using</code>، ودي الطريقة اللي بتشتغل بيها LINQ (<code>using System.Linq</code>).</li>
+<li>ما تقدرش توصل لـ private/protected لأنها دالة خارجية.</li>
+</ul>
+<pre><code>class Foo { public void Hi() =&gt; Console.WriteLine("instance"); }
+static class FooExt { public static void Hi(this Foo f) =&gt; Console.WriteLine("extension"); }
+new Foo().Hi();    // instance</code></pre>
+<div class="box warn"><p><b class="t">أخطاء ومخاطر:</b></p>
+<ol>
+<li><b>Value types بتتنسخ:</b>
+<pre><code>static void Inc(this int x) { x++; }
+int n = 5; n.Inc();
+Console.WriteLine(n);   // 5 : عدّلت النسخة</code></pre></li>
+<li><b>الـ Versioning:</b> لو نوع المكتبة أضاف لاحقاً instance method بنفس اسم extension بتاعتك، النداءات القديمة هتتحول بصمت للـ instance method من غير أي تحذير.</li>
+<li><b>تلوث الـ IntelliSense:</b> extension على <code>object</code> أو <code>string</code> بتظهر في كل مكان. اعملها في namespace مخصص.</li>
+</ol></div>
+<p><b>الاستخدام الأقوى:</b> الـ extension على الـ <code>interface</code> زي <code>IEnumerable&lt;T&gt;</code> (كل LINQ) والـ <code>IServiceCollection</code> (كل <code>AddXxx()</code> في ASP.NET Core). بتضيف سلوك لكل الأنواع اللي بتنفذ الـ interface من غير ما تلمسها.</p>
+<p><b>إمتى ما تستخدمهاش (السلايد 36):</b> لو الدالة محتاجة وصول للـ private، أو بتخالف مسؤولية النوع، أو أنت مالك النوع فحطها فيه مباشرة. وفي C# 14 اتضافت صيغة <code>extension</code> blocks اللي بتدعم properties وغيرها، راجع الـ docs قبل ما تعتمد عليها.</p>
+
+<h2 id="p">4) Partial</h2>
+<h3>أولاً: من الصفر</h3>
+<p>الـ <code>partial</code> بتخليك تكتب نفس الـ class في أكتر من ملف. الـ compiler بيجمعهم كلهم في class واحدة قبل ما يترجم.</p>
+<pre><code>// Student.Core.cs
+public partial class Student { public int Id { get; set; } public string Name { get; set; } }
+
+// Student.Extras.cs
+public partial class Student { public void Display() =&gt; Console.WriteLine($"{Id} - {Name}"); }</code></pre>
+<p><b>ليه موجودة؟</b> أساساً لفصل الكود المولَّد تلقائياً (Designer و EF scaffolding و Source Generators) عن كودك. الأداة تعيد توليد ملفها وكودك في ملف تاني ما يتمسحش.</p>
+<h3>ثانياً: Partial Methods</h3>
+<pre><code>public partial class Logger
+{
+    partial void WriteLog(string message);          // declaration
+    public void Log(string m) { WriteLog(m); }
+}
+public partial class Logger
+{
+    partial void WriteLog(string message) =&gt; Console.WriteLine($"LOG: {message}");  // اختياري
+}</code></pre>
+<p>الـ partial method التقليدية: <code>void</code> وضمنياً <code>private</code>، ولو مفيش implementation الـ compiler <b>بيشيل النداء</b> تماماً. من C# 9 ظهرت extended partial methods (بـ access modifier أو return value أو <code>out</code>) وفي الحالة دي الـ implementation <b>إجبارية</b>.</p>
+<h3>ثالثاً: القواعد والمتقدم</h3>
+<ul>
+<li>كل الأجزاء: كلمة <code>partial</code>، نفس الـ namespace، نفس الـ assembly، ونفس الـ accessibility لو اتحددت.</li>
+<li>وقت الـ Runtime مفيش حاجة اسمها partial، دي class عادية وواحدة.</li>
+<li>الـ <code>partial</code> ممكن على class و struct و interface.</li>
+<li>الـ base class والـ interfaces بيتجمعوا من كل الأجزاء.</li>
+</ul>
+<pre><code>// مثال حديث: Source Generator في .NET
+public static partial class Patterns
+{
+    [GeneratedRegex(@"^\d{3}$")]
+    public static partial Regex ThreeDigits();   // الـ generator يكتب الجسم
+}</code></pre>
+<div class="box warn"><p><b class="t">خطر عملي:</b> لو عدّلت يدوياً في الملف المولَّد (<code>*.Designer.cs</code> أو <code>*.g.cs</code>) هتضيع تعديلاتك عند إعادة التوليد. حط كودك في الجزء التاني دايماً. وكمان استخدام <code>partial</code> لتقسيم class ضخمة بدون سبب بيخبي مشكلة تصميم (God class) ولا يحلها.</p></div>
+
+<h2 id="f">5) تصحيحات للسلايدات</h2>
+<div class="box ok"><ol>
+<li><b>سلايد 37:</b> الإجابة المكتوبة B (False) غلط. الكود بيرجع <code>true</code> (الـ null بيعتبر فاضي)، فالصح <b>A</b>. شرح السلايد نفسه بيقول "returns true" وبيتناقض مع الحرف.</li>
+<li><b>سلايد 46:</b> سؤال 8 متكرر من الجلسة السابقة بإجابة C، والصح <b>A</b> (الخطأ CS0534 عند تعريف <code>class Employee</code>).</li>
+<li><b>سلايد 45:</b> "Partial classes can't be nested inside other classes" غلط. الـ nested partial مسموح (والـ class الخارجية تحتاج <code>partial</code> فقط لو هي نفسها مقسمة). و"can't inherit in one part and define base in another" مضللة: تقدر تحدد الـ base في جزء واحد بس، والمهم ما يحصلش تعارض بين الأجزاء.</li>
+<li><b>سلايد 16:</b> <code>BinaryFormatter</code> ممنوع (قسم 1).</li>
+<li><b>سلايد 10 و 15:</b> الـ struct اللي فيه references، والـ string، زي ما اتشرح.</li>
+</ol></div>
+
+<h2 id="r">6) مراجعة سريعة</h2>
+<div class="tw"><table>
+<tr><th>الموضوع</th><th>الفكرة الأساسية</th><th>أكبر فخ</th></tr>
+<tr><td>Shallow Copy</td><td>بتنسخ المستوى الأول بس</td><td>الـ objects الداخلية مشتركة</td></tr>
+<tr><td>Deep Copy</td><td>نسخة مستقلة بالكامل</td><td>الـ cycles والحقول المنسية</td></tr>
+<tr><td>Static</td><td>نسخة واحدة على مستوى الـ class</td><td>Thread-safety وتسريب الذاكرة</td></tr>
+<tr><td>Extension</td><td>دالة static بشكل instance (compile-time)</td><td>الـ instance بتكسب، والـ versioning</td></tr>
+<tr><td>Partial</td><td>class واحدة في ملفات متعددة</td><td>تعديل الملف المولَّد</td></tr>
+</table></div>
+<footer>مبني على Session05C-OOP.pptx. اقتراحات للجولة الجاية: الـ <code>readonly</code> والـ Immutability، <code>IDisposable</code> و Finalizer، و Source Generators بالتفصيل.</footer>
+</main>
+</body>
+</html>
